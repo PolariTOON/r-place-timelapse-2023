@@ -1,0 +1,3 @@
+[submodule "r-place-atlas-2023"]
+	path = r-place-atlas-2023
+	url = https://github.com/placeAtlas/atlas-2023
