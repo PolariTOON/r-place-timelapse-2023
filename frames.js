@@ -6,10 +6,11 @@ const {fileURLToPath} = url;
 const {createCanvas, loadImage} = canvas;
 const here = import.meta.url;
 const root = here.slice(0, here.lastIndexOf("/"));
-const frames = await readdir(fileURLToPath(`${root}/r-place-atlas-2023/web/_img/canvas/main`));
-frames.unshift(`../main-ex/start.png`);
-const frameCount = frames.length;
-const padding = `${frameCount - 1}`.length;
+const diffs = await readdir(fileURLToPath(`${root}/r-place-atlas-2023/web/_img/canvas/main-2`));
+diffs.unshift(`../main-ex/start.png`);
+diffs.push(`../main-ex/end.png`);
+const diffCount = diffs.length;
+const padding = `${diffCount - 1}`.length;
 const centers = JSON.parse(await readFile(fileURLToPath(`${root}/r-place-atlas-2023/web/atlas.json`))).find((entry) => {
 	const found = entry.id === 3579;
 	return found;
@@ -45,19 +46,21 @@ for (let k = 0; k < rangeCount - 1; ++k) {
 	const threshold = Math.round((previousEnd + 1 + nextStart) / 2);
 	thresholds.push(threshold);
 }
-thresholds.push(frameCount);
+thresholds.push(diffCount);
 await mkdir(fileURLToPath(`${root}/frames`), {
 	recursive: true,
 });
-for (let i = 0, j = 0; i < frameCount; ++i) {
+for (let i = 0, j = 0; i < diffCount; ++i) {
 	if (i >= thresholds[j]) {
 		++j;
 	}
-	const frame = frames[i];
+	const diff = diffs[i];
 	const range = ranges[j];
 	const [start, end] = range;
-	console.log(`${i + 1} / ${frameCount} (frame ${frame}, range ${start}-${end})`);
-	const image = await loadImage(fileURLToPath(`${root}/r-place-atlas-2023/web/_img/canvas/main/${frame}`));
+	console.log(`${i + 1} / ${diffCount} (diff ${diff}, range ${start}-${end})`);
+	const image = await loadImage(fileURLToPath(`${root}/r-place-atlas-2023/web/_img/canvas/main-2/${diff}`));
+	const base = diff.match(/^\d+_\d+\.png$/) != null ? diff.split("_")[1] : null;
+	const baseImage = base != null ? await loadImage(fileURLToPath(`${root}/r-place-atlas-2023/web/_img/canvas/main-2/${base}`)) : null;
 	const {width, height} = image;
 	const center = centers[`${start}-${end}`];
 	const [cx, cy] = center;
@@ -68,6 +71,9 @@ for (let i = 0, j = 0; i < frameCount; ++i) {
 	context.imageSmoothingEnabled = false;
 	context.fillStyle = "#fff";
 	context.fillRect(0, 0, 160 * 12, 90 * 12);
+	if (baseImage != null) {
+		context.drawImage(baseImage, x, y, 160, 90, 0, 0, 160 * 12, 90 * 12);
+	}
 	context.drawImage(image, x, y, 160, 90, 0, 0, 160 * 12, 90 * 12);
 	await writeFile(fileURLToPath(`${root}/frames/frame-${`${i}`.padStart(padding, "0")}.png`), canvas.toBuffer());
 }
