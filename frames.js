@@ -10,7 +10,10 @@ const frames = await readdir(fileURLToPath(`${root}/r-place-atlas-2023/web/_img/
 frames.unshift(`../main-ex/start.png`);
 const frameCount = frames.length;
 const padding = `${frameCount - 1}`.length;
-const centers = JSON.parse(await readFile(fileURLToPath(`${root}/r-place-atlas-2023/data/patches/super-bear-adventure.json`))).center;
+const centers = JSON.parse(await readFile(fileURLToPath(`${root}/r-place-atlas-2023/web/atlas.json`))).find((entry) => {
+	const found = entry.id === 3579;
+	return found;
+}).center;
 const ranges = Object.keys(centers).map((key) => {
 	const split = key.split("-");
 	const start = Number(split[0]);
